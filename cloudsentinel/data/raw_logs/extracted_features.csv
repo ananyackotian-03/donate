@@ -1,0 +1,8 @@
+event_time,event_name,aws_region,source_ip,user_name,user_type,error_code,is_suspicious,is_root_login
+2024-01-15T10:23:45Z,CreateUser,us-east-1,203.0.113.42,suspicious-actor,IAMUser,,1,0
+2024-01-15T10:25:00Z,DeleteTrail,us-east-1,203.0.113.42,suspicious-actor,IAMUser,,1,0
+2024-01-15T10:26:00Z,GetBucketPolicy,us-east-1,10.0.0.1,Unknown,Root,,0,0
+2024-01-15T10:27:00Z,DescribeInstances,ap-south-1,10.0.0.5,developer1,IAMUser,AccessDenied,0,0
+2024-01-15T10:28:00Z,DescribeInstances,ap-south-1,10.0.0.5,developer1,IAMUser,AccessDenied,0,0
+2024-01-15T10:29:00Z,DescribeInstances,ap-south-1,10.0.0.5,developer1,IAMUser,AccessDenied,0,0
+2024-01-15T10:30:00Z,ListBuckets,us-east-1,52.94.26.10,admin,IAMUser,,0,0

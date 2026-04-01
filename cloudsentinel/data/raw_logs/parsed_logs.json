@@ -1,0 +1,65 @@
+[
+  {
+    "event_time": "2024-01-15T10:23:45Z",
+    "event_name": "CreateUser",
+    "aws_region": "us-east-1",
+    "source_ip": "203.0.113.42",
+    "user_name": "suspicious-actor",
+    "user_type": "IAMUser",
+    "error_code": null
+  },
+  {
+    "event_time": "2024-01-15T10:25:00Z",
+    "event_name": "DeleteTrail",
+    "aws_region": "us-east-1",
+    "source_ip": "203.0.113.42",
+    "user_name": "suspicious-actor",
+    "user_type": "IAMUser",
+    "error_code": null
+  },
+  {
+    "event_time": "2024-01-15T10:26:00Z",
+    "event_name": "GetBucketPolicy",
+    "aws_region": "us-east-1",
+    "source_ip": "10.0.0.1",
+    "user_name": "Unknown",
+    "user_type": "Root",
+    "error_code": null
+  },
+  {
+    "event_time": "2024-01-15T10:27:00Z",
+    "event_name": "DescribeInstances",
+    "aws_region": "ap-south-1",
+    "source_ip": "10.0.0.5",
+    "user_name": "developer1",
+    "user_type": "IAMUser",
+    "error_code": "AccessDenied"
+  },
+  {
+    "event_time": "2024-01-15T10:28:00Z",
+    "event_name": "DescribeInstances",
+    "aws_region": "ap-south-1",
+    "source_ip": "10.0.0.5",
+    "user_name": "developer1",
+    "user_type": "IAMUser",
+    "error_code": "AccessDenied"
+  },
+  {
+    "event_time": "2024-01-15T10:29:00Z",
+    "event_name": "DescribeInstances",
+    "aws_region": "ap-south-1",
+    "source_ip": "10.0.0.5",
+    "user_name": "developer1",
+    "user_type": "IAMUser",
+    "error_code": "AccessDenied"
+  },
+  {
+    "event_time": "2024-01-15T10:30:00Z",
+    "event_name": "ListBuckets",
+    "aws_region": "us-east-1",
+    "source_ip": "52.94.26.10",
+    "user_name": "admin",
+    "user_type": "IAMUser",
+    "error_code": null
+  }
+]

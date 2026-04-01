@@ -4,14 +4,14 @@ const express = require("express")
 const cors = require("cors")
 const connectDB = require("./config/db")
 
+const authRoutes = require("./src/routes/authRoutes")
+
 connectDB()
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
-
-const authRoutes = require("./src/routes/authRoutes")
 
 app.use("/api/auth", authRoutes)
 

@@ -1,0 +1,145 @@
+{
+  "Records": [
+    {
+      "eventTime": "2024-01-15T10:23:45Z",
+      "eventName": "CreateUser",
+      "eventSource": "iam.amazonaws.com",
+      "sourceIPAddress": "203.0.113.42",
+      "awsRegion": "us-east-1",
+      "userAgent": "aws-cli/2.0",
+      "errorCode": null,
+      "errorMessage": null,
+      "requestID": "req-001",
+      "eventID": "evt-001",
+      "userIdentity": {
+        "type": "IAMUser",
+        "userName": "suspicious-actor",
+        "accountId": "123456789012",
+        "arn": "arn:aws:iam::123456789012:user/suspicious-actor"
+      },
+      "resources": [
+        {
+          "type": "AWS::IAM::User",
+          "ARN": "arn:aws:iam::123456789012:user/backdoor-user"
+        }
+      ]
+    },
+    {
+      "eventTime": "2024-01-15T10:25:00Z",
+      "eventName": "DeleteTrail",
+      "eventSource": "cloudtrail.amazonaws.com",
+      "sourceIPAddress": "203.0.113.42",
+      "awsRegion": "us-east-1",
+      "userAgent": "aws-cli/2.0",
+      "errorCode": null,
+      "errorMessage": null,
+      "requestID": "req-002",
+      "eventID": "evt-002",
+      "userIdentity": {
+        "type": "IAMUser",
+        "userName": "suspicious-actor",
+        "accountId": "123456789012",
+        "arn": "arn:aws:iam::123456789012:user/suspicious-actor"
+      },
+      "resources": []
+    },
+    {
+      "eventTime": "2024-01-15T10:26:00Z",
+      "eventName": "GetBucketPolicy",
+      "eventSource": "s3.amazonaws.com",
+      "sourceIPAddress": "10.0.0.1",
+      "awsRegion": "us-east-1",
+      "userAgent": "console.amazonaws.com",
+      "errorCode": null,
+      "errorMessage": null,
+      "requestID": "req-003",
+      "eventID": "evt-003",
+      "userIdentity": {
+        "type": "Root",
+        "accountId": "123456789012"
+      },
+      "resources": [
+        {
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::my-bucket"
+        }
+      ]
+    },
+    {
+      "eventTime": "2024-01-15T10:27:00Z",
+      "eventName": "DescribeInstances",
+      "eventSource": "ec2.amazonaws.com",
+      "sourceIPAddress": "10.0.0.5",
+      "awsRegion": "ap-south-1",
+      "userAgent": "boto3/1.34",
+      "errorCode": "AccessDenied",
+      "errorMessage": "User is not authorized",
+      "requestID": "req-004",
+      "eventID": "evt-004",
+      "userIdentity": {
+        "type": "IAMUser",
+        "userName": "developer1",
+        "accountId": "123456789012",
+        "arn": "arn:aws:iam::123456789012:user/developer1"
+      },
+      "resources": []
+    },
+    {
+      "eventTime": "2024-01-15T10:28:00Z",
+      "eventName": "DescribeInstances",
+      "eventSource": "ec2.amazonaws.com",
+      "sourceIPAddress": "10.0.0.5",
+      "awsRegion": "ap-south-1",
+      "userAgent": "boto3/1.34",
+      "errorCode": "AccessDenied",
+      "errorMessage": "User is not authorized",
+      "requestID": "req-005",
+      "eventID": "evt-005",
+      "userIdentity": {
+        "type": "IAMUser",
+        "userName": "developer1",
+        "accountId": "123456789012",
+        "arn": "arn:aws:iam::123456789012:user/developer1"
+      },
+      "resources": []
+    },
+    {
+      "eventTime": "2024-01-15T10:29:00Z",
+      "eventName": "DescribeInstances",
+      "eventSource": "ec2.amazonaws.com",
+      "sourceIPAddress": "10.0.0.5",
+      "awsRegion": "ap-south-1",
+      "userAgent": "boto3/1.34",
+      "errorCode": "AccessDenied",
+      "errorMessage": "User is not authorized",
+      "requestID": "req-006",
+      "eventID": "evt-006",
+      "userIdentity": {
+        "type": "IAMUser",
+        "userName": "developer1",
+        "accountId": "123456789012",
+        "arn": "arn:aws:iam::123456789012:user/developer1"
+      },
+      "resources": []
+    },
+    {
+      "eventTime": "2024-01-15T10:30:00Z",
+      "eventName": "ListBuckets",
+      "eventSource": "s3.amazonaws.com",
+      "sourceIPAddress": "52.94.26.10",
+      "awsRegion": "us-east-1",
+      "userAgent": "aws-cli/2.0",
+      "errorCode": null,
+      "errorMessage": null,
+      "requestID": "req-007",
+      "eventID": "evt-007",
+      "userIdentity": {
+        "type": "IAMUser",
+        "userName": "admin",
+        "accountId": "123456789012",
+        "arn": "arn:aws:iam::123456789012:user/admin"
+      },
+      "resources": []
+    }
+  ]
+}
