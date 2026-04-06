@@ -1,26 +1,29 @@
-require("dotenv").config()
+const cors = require("cors");
 
-const express = require("express")
-const cors = require("cors")
-const connectDB = require("./config/db")
+const express = require("express");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-const authRoutes = require("./src/routes/authRoutes")
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-connectDB()
+// routes
+const authRoutes = require("./src/routes/authRoutes");
+app.use("/api/auth", authRoutes);
 
-const app = express()
+// DB connect
+mongoose
+  .connect("mongodb://127.0.0.1:27017/daansetu")
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log(err));
 
-app.use(cors())
-app.use(express.json())
-
-app.use("/api/auth", authRoutes)
-
+// test route
 app.get("/", (req, res) => {
- res.send("DaanSetu Backend Running")
-})
+  res.send("Server working");
+});
 
-const PORT = process.env.PORT || 5000
-
-app.listen(PORT, () => {
- console.log(`Server running on port ${PORT}`)
-})
+// start
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
+});

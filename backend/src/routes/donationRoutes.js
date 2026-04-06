@@ -1,16 +1,21 @@
 const express = require("express")
 const router = express.Router()
 
-const { createDonation, getDonations, getDonationById } = require("../controllers/donationController")
+const { register, login } = require("../controllers/authController")
 const authMiddleware = require("../middleware/authMiddleware")
 
-// create donation item
-router.post("/create", authMiddleware, createDonation)
+// register
+router.post("/register", register)
 
-// get all donation items
-router.get("/", getDonations)
+// login
+router.post("/login", login)
 
-// get single donation item
-router.get("/:id", getDonationById)
+// protected test route
+router.get("/profile", authMiddleware, (req, res) => {
+  res.json({
+    message: "Protected route accessed",
+    user: req.user
+  })
+})
 
 module.exports = router
