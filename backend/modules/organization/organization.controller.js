@@ -83,3 +83,83 @@ exports.createOrganization = async (req, res) => {
     });
   }
 };
+
+// GET ALL VERIFIED ORGANIZATIONS
+exports.getAllOrganizations = async (req, res) => {
+  try {
+    const organizations = await Organization.find({
+      verificationStatus: 'verified',
+      isActive: true
+    }).select('-documents'); // hide heavy data
+
+    res.status(200).json({
+      success: true,
+      data: organizations
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// GET ORGANIZATION BY ID
+exports.getOrganizationById = async (req, res) => {
+  try {
+    const org = await Organization.findById(req.params.id)
+      .populate('adminUser', 'name email')
+      .populate('members', 'name email');
+
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: org
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// GET MY ORGANIZATION (LOGGED IN USER)
+exports.getMyOrganization = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user.organization) {
+      return res.status(404).json({
+        success: false,
+        message: 'You are not part of any organization'
+      });
+    }
+
+    const org = await Organization.findById(user.organization)
+      .populate('adminUser', 'name email')
+      .populate('members', 'name email');
+
+    res.status(200).json({
+      success: true,
+      data: org
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
