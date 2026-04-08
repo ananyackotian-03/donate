@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
+import { donationAPI } from '../utils/apiClient';
 import './AddDonation.css';
 
 export default function AddDonation() {
@@ -12,7 +13,9 @@ export default function AddDonation() {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleImageChange = (e) => {
@@ -46,6 +49,7 @@ export default function AddDonation() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     // Basic validation
@@ -55,35 +59,29 @@ export default function AddDonation() {
       return;
     }
 
+    if (!isAuthenticated) {
+      setError('You must be logged in to add a donation');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('You must be logged in to add a donation');
-        setLoading(false);
-        return;
-      }
+      const donationData = {
+        title,
+        category,
+        quantity: parseInt(quantity),
+        location,
+        description,
+        image
+      };
 
-      // Create FormData to handle file upload
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('category', category);
-      formData.append('quantity', parseInt(quantity));
-      formData.append('location', location);
-      formData.append('description', description);
-      if (image) {
-        formData.append('image', image);
-      }
-
-      const response = await axios.post('http://localhost:5000/api/donations', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await donationAPI.createDonation(donationData);
 
       if (response.data.success) {
-        alert('Donation added successfully!');
-        navigate('/donor-dashboard');
+        setSuccess('✅ Donation added successfully! Organizations can now see it.');
+        setTimeout(() => {
+          navigate('/donor-dashboard');
+        }, 2000);
       } else {
         setError(response.data.message || 'Failed to add donation');
       }
@@ -98,6 +96,130 @@ export default function AddDonation() {
 
   return (
     <div className="add-donation-page">
+      <div className="add-donation-container">
+        <div className="add-donation-card">
+          <Link to="/donor-dashboard" className="back-link">← Back to Dashboard</Link>
+          
+          <div className="form-header">
+            <h1>📦 Add a New Donation</h1>
+            <p>Share an item you'd like to donate</p>
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
+
+          <form onSubmit={handleSubmit} className="donation-form">
+            <div className="form-group">
+              <label htmlFor="title">Item Name *</label>
+              <input
+                type="text"
+                id="title"
+                placeholder="e.g., Calculus Textbook, Winter Jacket"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="category">Category *</label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                disabled={loading}
+              >
+                <option value="books">📚 Books</option>
+                <option value="clothing">👔 Clothing</option>
+                <option value="electronics">💻 Electronics</option>
+                <option value="furniture">🪑 Furniture</option>
+                <option value="food">🍎 Food & Groceries</option>
+                <option value="medical">⚕️ Medical Supplies</option>
+                <option value="other">🎁 Other</option>
+              </select>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="quantity">Quantity *</label>
+                <input
+                  type="number"
+                  id="quantity"
+                  placeholder="e.g., 5"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="location">Pickup Location *</label>
+                <input
+                  type="text"
+                  id="location"
+                  placeholder="e.g., Downtown Campus, Home Address"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="description">Item Description</label>
+              <textarea
+                id="description"
+                placeholder="Describe the condition and details of the item"
+                rows="4"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="image">Upload Photo (Optional)</label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="file-input"
+                disabled={loading}
+              />
+              <p className="file-info">Max file size: 5MB. Supported formats: JPG, PNG, GIF, WebP</p>
+              
+              {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Preview" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImage(null);
+                      setImagePreview(null);
+                    }}
+                    className="btn-remove-image"
+                    disabled={loading}
+                  >
+                    ✕ Remove Image
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? '⏳ Adding Donation...' : '✅ Add Donation'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
       <div className="add-donation-container">
         <div className="add-donation-card">
           <Link to="/donor-dashboard" className="back-link">← Back to Dashboard</Link>

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
+import { donationAPI } from '../utils/apiClient';
 import './DonorDashboard.css';
 
 export default function DonorDashboard() {
@@ -13,25 +14,21 @@ export default function DonorDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { isAuthenticated, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
     const fetchMyDonations = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/login');
-          return;
-        }
-
-        const response = await axios.get('http://localhost:5000/api/donations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        setLoading(true);
+        const response = await donationAPI.getMyDonations();
 
         if (response.data.success) {
-          // Filter to show user's own donations if endpoint is implemented
           const allDonations = response.data.donations || [];
           setDonations(allDonations.slice(0, 5)); // Show last 5
 
@@ -44,22 +41,26 @@ export default function DonorDashboard() {
           setStats({ total, available, requested, completed });
         }
       } catch (err) {
-        setError('Failed to load dashboard data');
         console.error('Dashboard error:', err);
+        setError('Failed to load donations. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchMyDonations();
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
+
+  if (loading) {
+    return <div className="dashboard-page"><div className="loading">Loading dashboard...</div></div>;
+  }
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
         <div className="dashboard-header">
-          <h1>Donor Dashboard</h1>
-          <p>Welcome! Manage your donations and help organizations in need.</p>
+          <h1>📊 Donor Dashboard</h1>
+          <p>Welcome, {user?.name}! Manage your donations and help organizations in need.</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
@@ -85,6 +86,13 @@ export default function DonorDashboard() {
             <p>Explore items available for request</p>
             <div className="card-arrow">→</div>
           </Link>
+
+          <Link to="/create-organization" className="dashboard-card">
+            <div className="card-icon">🏢</div>
+            <h2>Create Organization</h2>
+            <p>Register your organization with us</p>
+            <div className="card-arrow">→</div>
+          </Link>
         </div>
 
         <div className="dashboard-stats">
@@ -108,7 +116,7 @@ export default function DonorDashboard() {
 
         {!loading && donations.length > 0 && (
           <div className="recent-donations">
-            <h2>Your Recent Donations</h2>
+            <h2>📚 Your Recent Donations</h2>
             <div className="donations-list">
               {donations.map((donation) => (
                 <div key={donation._id} className="donation-item">
@@ -121,8 +129,9 @@ export default function DonorDashboard() {
                   )}
                   <div className="donation-info">
                     <h4>{donation.title}</h4>
-                    <p className="category">{donation.category}</p>
-                    <p className="quantity">Qty: {donation.quantity}</p>
+                    <p className="category">📂 {donation.category}</p>
+                    <p className="quantity">📦 Qty: {donation.quantity}</p>
+                    <p className="location">📍 {donation.location}</p>
                   </div>
                   <span className={`status-badge status-${donation.status?.toLowerCase()}`}>
                     {donation.status}
@@ -130,6 +139,15 @@ export default function DonorDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {!loading && donations.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No donations yet</h3>
+            <p>Start by adding a new donation!</p>
+            <Link to="/add-donation" className="btn btn-primary">Add Donation</Link>
           </div>
         )}
       </div>

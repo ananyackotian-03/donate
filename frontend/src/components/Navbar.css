@@ -16,6 +16,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .navbar-logo {
@@ -42,12 +43,24 @@
   align-items: center;
 }
 
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
 .nav-links {
   display: flex;
   list-style: none;
   gap: 2.5rem;
   margin: 0;
   padding: 0;
+  align-items: center;
 }
 
 .nav-item {
@@ -64,12 +77,34 @@
   font-family: 'Segoe UI', sans-serif;
   font-size: 1rem;
   letter-spacing: 0.4px;
+  border: none;
+  background: none;
+  cursor: pointer;
 }
 
 .nav-link:hover {
   border-bottom-color: #fbbf24;
   color: #fbbf24;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  align-items: center;
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+.user-role {
+  color: #dbeafe;
+  font-size: 0.85rem;
 }
 
 .btn-register {
@@ -79,12 +114,33 @@
   border-radius: 25px;
   transition: all 0.3s ease;
   border-bottom: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .btn-register:hover {
   background-color: #fcd34d;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.btn-logout {
+  background-color: #ef4444 !important;
+  color: white !important;
+  padding: 0.5rem 1.5rem !important;
+  border-radius: 25px;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: none !important;
+  font-weight: 600;
+}
+
+.btn-logout:hover {
+  background-color: #dc2626 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* Mobile Responsive */
@@ -94,19 +150,60 @@
   }
 
   .navbar-logo {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .menu-toggle {
+    display: block;
   }
 
   .nav-links {
-    gap: 1rem;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    flex-direction: column;
+    gap: 0;
+    padding: 1rem 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .nav-links.active {
+    max-height: 500px;
+    padding: 1rem 0;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+  }
+
+  .nav-item {
+    width: 100%;
   }
 
   .nav-link {
-    font-size: 0.9rem;
+    display: block;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .btn-register {
-    padding: 0.4rem 1rem;
-    font-size: 0.9rem;
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-register, .btn-logout {
+    width: calc(100% - 3rem);
+    margin: 0.5rem 1.5rem;
+  }
+
+  .user-info {
+    width: calc(100% - 3rem);
+    margin: 0.5rem 1.5rem;
+    justify-content: space-between;
+  }
+
+  .nav-link.btn-logout {
+    background-color: #ef4444 !important;
   }
 }
+

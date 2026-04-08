@@ -1,33 +1,45 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import './OrgDashboard.css';
 
-export default function OrganizationDashboard() {
-  const [donations, setDonations] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function OrgDashboard() {
+  const { user } = useContext(AuthContext);
 
-  useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/donations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setDonations(response.data);
-      } catch (err) {
-        console.error('Failed to load donations');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDonations();
-  }, []);
   return (
     <div className="org-dashboard-page">
       <div className="org-dashboard-container">
+        <div className="dashboard-header">
+          <h1>🏢 Organization Dashboard</h1>
+          <p>Welcome, {user?.name}! Manage your organization and donations.</p>
+        </div>
+
+        <div className="dashboard-grid">
+          <Link to="/my-organization" className="dashboard-card">
+            <div className="card-icon">📋</div>
+            <h2>View Organization</h2>
+            <p>View and manage your organization details</p>
+            <div className="card-arrow">→</div>
+          </Link>
+
+          <Link to="/view-donations" className="dashboard-card">
+            <div className="card-icon">🔍</div>
+            <h2>Browse Donations</h2>
+            <p>Find and request donations for your organization</p>
+            <div className="card-arrow">→</div>
+          </Link>
+
+          <Link to="/notifications" className="dashboard-card">
+            <div className="card-icon">🔔</div>
+            <h2>Notifications</h2>
+            <p>Check your notifications and updates</p>
+            <div className="card-arrow">→</div>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
         <div className="org-dashboard-header">
           <h1>Organization Dashboard</h1>
           <p>Find and request items to help your community</p>

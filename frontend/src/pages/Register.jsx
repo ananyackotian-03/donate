@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 import './Register.css';
 
 export default function Register() {
@@ -9,12 +9,15 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('donor');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     // Basic validation
@@ -24,18 +27,18 @@ export default function Register() {
       return;
     }
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        name,
-        email,
-        password,
-        role
-      });
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
 
-      alert('User registered successfully');
-      navigate('/login');
+    try {
+      await register(name, email, password, role);
+      setSuccess('Registration successful! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -51,6 +54,7 @@ export default function Register() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
 
           <form onSubmit={handleSubmit} className="register-form">
             <div className="form-group">
@@ -62,6 +66,7 @@ export default function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -74,6 +79,7 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -82,10 +88,11 @@ export default function Register() {
               <input
                 type="password"
                 id="password"
-                placeholder="Create a password"
+                placeholder="Create a password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -95,14 +102,15 @@ export default function Register() {
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
+                disabled={loading}
               >
-                <option value="donor">Donor</option>
-                <option value="organization">Organization</option>
+                <option value="donor">Donor (Donate items)</option>
+                <option value="organization">Organization (Receive donations)</option>
               </select>
             </div>
 
             <button type="submit" className="btn-register" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? '⏳ Creating Account...' : 'Create Account'}
             </button>
           </form>
 

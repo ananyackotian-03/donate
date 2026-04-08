@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 import './Login.css';
 
 export default function Login() {
@@ -8,6 +8,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -23,26 +24,19 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password
-      });
-
-      // Store token and user data in localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
+      const response = await login(email, password);
+      
       // Redirect based on user role
-      const userRole = response.data.user?.role || 'donor';
+      const userRole = response.user?.role || 'donor';
       if (userRole === 'admin') {
         navigate('/admin');
       } else if (userRole === 'organization') {
-        navigate('/organization');
+        navigate('/my-organization');
       } else {
-        navigate('/donor');
+        navigate('/donor-dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +63,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -81,11 +76,12 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
 
             <button type="submit" className="btn-login" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? '⏳ Logging in...' : 'Login'}
             </button>
           </form>
 
