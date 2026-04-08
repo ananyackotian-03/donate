@@ -17,7 +17,7 @@ app.use("/api/organizations", organizationRoutes);
 
 // DB connect
 mongoose
-  .connect("mongodb://127.0.0.1:27017/daansetu")
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/daansetu")
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
 });
 
 // start
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
