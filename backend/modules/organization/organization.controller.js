@@ -1,5 +1,6 @@
 const Organization = require('./organization.model');
 const User = require('../../src/models/User');
+const { createNotification } = require('../../utils/notificationService');
 
 exports.createOrganization = async (req, res) => {
   try {
@@ -240,6 +241,25 @@ exports.verifyOrganization = async (req, res) => {
 
     await org.save();
 
+    // Send notification to org admin
+    if (action === 'approve') {
+      await createNotification({
+        recipient: org.adminUser,
+        type: 'org_verified',
+        title: 'Organization Verified',
+        message: `Your organization "${org.name}" has been approved!`,
+        relatedOrg: org._id,
+      });
+    } else if (action === 'reject') {
+      await createNotification({
+        recipient: org.adminUser,
+        type: 'org_rejected',
+        title: 'Organization Rejected',
+        message: `Your organization was rejected. Reason: ${rejectionReason}`,
+        relatedOrg: org._id,
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: `Organization ${action}d successfully`,
@@ -299,13 +319,14 @@ exports.addMember = async (req, res) => {
     user.organization = org._id;
     await user.save();
 
-    // TODO: Trigger notification when notification service is ready
-    // await createNotification({
-    //   recipient: user._id,
-    //   type: 'new_member',
-    //   title: 'Added to Organization',
-    //   message: `You have been added to ${org.name}`
-    // });
+    // Send notification to new member
+    await createNotification({
+      recipient: user._id,
+      type: 'new_member',
+      title: 'Added to Organization',
+      message: `You have been added to ${org.name}`,
+      relatedOrg: org._id,
+    });
 
     res.status(200).json({
       success: true,
