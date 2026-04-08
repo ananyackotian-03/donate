@@ -1,7 +1,59 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './DonorDashboard.css';
 
 export default function DonorDashboard() {
+  const [donations, setDonations] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    available: 0,
+    requested: 0,
+    completed: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchMyDonations = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:5000/api/donations', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.data.success) {
+          // Filter to show user's own donations if endpoint is implemented
+          const allDonations = response.data.donations || [];
+          setDonations(allDonations.slice(0, 5)); // Show last 5
+
+          // Calculate stats
+          const total = allDonations.length;
+          const available = allDonations.filter(d => d.status === 'AVAILABLE').length;
+          const requested = allDonations.filter(d => d.status === 'REQUESTED').length;
+          const completed = allDonations.filter(d => d.status === 'DONATED').length;
+
+          setStats({ total, available, requested, completed });
+        }
+      } catch (err) {
+        setError('Failed to load dashboard data');
+        console.error('Dashboard error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyDonations();
+  }, [navigate]);
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
@@ -9,6 +61,8 @@ export default function DonorDashboard() {
           <h1>Donor Dashboard</h1>
           <p>Welcome! Manage your donations and help organizations in need.</p>
         </div>
+
+        {error && <div className="error-message">{error}</div>}
 
         <div className="dashboard-grid">
           <Link to="/add-donation" className="dashboard-card">
@@ -25,28 +79,59 @@ export default function DonorDashboard() {
             <div className="card-arrow">→</div>
           </Link>
 
-          <div className="dashboard-card">
-            <div className="card-icon">📊</div>
-            <h2>Donation Status</h2>
-            <p>View overall donation statistics</p>
+          <Link to="/view-donations" className="dashboard-card">
+            <div className="card-icon">🔍</div>
+            <h2>Browse All Donations</h2>
+            <p>Explore items available for request</p>
             <div className="card-arrow">→</div>
-          </div>
+          </Link>
         </div>
 
         <div className="dashboard-stats">
           <div className="stat-card">
-            <div className="stat-number">5</div>
+            <div className="stat-number">{stats.total}</div>
             <div className="stat-label">Total Donations</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">2</div>
-            <div className="stat-label">Pending Requests</div>
+            <div className="stat-number">{stats.available}</div>
+            <div className="stat-label">Available</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">3</div>
+            <div className="stat-number">{stats.requested}</div>
+            <div className="stat-label">Requested</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">{stats.completed}</div>
             <div className="stat-label">Completed</div>
           </div>
         </div>
+
+        {!loading && donations.length > 0 && (
+          <div className="recent-donations">
+            <h2>Your Recent Donations</h2>
+            <div className="donations-list">
+              {donations.map((donation) => (
+                <div key={donation._id} className="donation-item">
+                  {donation.imageUrl && (
+                    <img 
+                      src={`http://localhost:5000${donation.imageUrl}`} 
+                      alt={donation.title}
+                      className="donation-item-image"
+                    />
+                  )}
+                  <div className="donation-info">
+                    <h4>{donation.title}</h4>
+                    <p className="category">{donation.category}</p>
+                    <p className="quantity">Qty: {donation.quantity}</p>
+                  </div>
+                  <span className={`status-badge status-${donation.status?.toLowerCase()}`}>
+                    {donation.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

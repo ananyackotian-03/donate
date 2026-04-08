@@ -7,21 +7,29 @@ const donationSchema = new mongoose.Schema({
   required: true
  },
 
- description: {
+ category: {
   type: String,
   required: true
  },
 
- category: {
-  type: String
+ quantity: {
+  type: Number,
+  required: true,
+  default: 1
  },
 
- condition: {
+ location: {
+  type: String,
+  required: true
+ },
+
+ description: {
   type: String
  },
 
  imageUrl: {
-  type: String
+  type: String,
+  default: null
  },
 
  status: {
@@ -32,10 +40,16 @@ const donationSchema = new mongoose.Schema({
 
  donorId: {
   type: mongoose.Schema.Types.ObjectId,
-  ref: "User"
+  ref: "User",
+  required: true
  },
 
  createdAt: {
+  type: Date,
+  default: Date.now
+ },
+
+ updatedAt: {
   type: Date,
   default: Date.now
  }

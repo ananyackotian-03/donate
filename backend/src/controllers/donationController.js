@@ -3,32 +3,51 @@ const Donation = require("../models/Donation")
 // CREATE DONATION
 exports.createDonation = async (req, res) => {
   try {
-    const { title, description, category, condition, imageUrl } = req.body
+    const { title, category, quantity, location, description } = req.body
 
-    if (!title || !description) {
+    // Validation
+    if (!title || !category || !location) {
       return res.status(400).json({
-        message: "Title and description are required"
+        success: false,
+        message: "Title, category, and location are required"
       })
+    }
+
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid quantity is required"
+      })
+    }
+
+    // Handle image upload
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
     }
 
     const donation = new Donation({
       title,
-      description,
       category,
-      condition,
+      quantity,
+      location,
+      description: description || "",
       imageUrl,
       donorId: req.user.id
     })
 
     await donation.save()
+    await donation.populate("donorId", "name email")
 
     res.status(201).json({
-      message: "Donation item created",
+      success: true,
+      message: "Donation item created successfully",
       donation
     })
 
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     })
@@ -36,16 +55,28 @@ exports.createDonation = async (req, res) => {
 }
 
 
-// GET ALL DONATIONS
+// GET ALL DONATIONS (with filtering)
 exports.getDonations = async (req, res) => {
   try {
-    const donations = await Donation.find()
-      .populate("donorId", "name email")
+    const { category, status } = req.query
+    let query = {}
 
-    res.json(donations)
+    if (category) query.category = category
+    if (status) query.status = status
+
+    const donations = await Donation.find(query)
+      .populate("donorId", "name email")
+      .sort({ createdAt: -1 })
+
+    res.json({
+      success: true,
+      count: donations.length,
+      donations
+    })
 
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     })
@@ -61,14 +92,41 @@ exports.getDonationById = async (req, res) => {
 
     if (!donation) {
       return res.status(404).json({
+        success: false,
         message: "Donation not found"
       })
     }
 
-    res.json(donation)
+    res.json({
+      success: true,
+      donation
+    })
 
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    })
+  }
+}
+
+
+// GET MY DONATIONS (for logged-in user)
+exports.getMyDonations = async (req, res) => {
+  try {
+    const donations = await Donation.find({ donorId: req.user.id })
+      .sort({ createdAt: -1 })
+
+    res.json({
+      success: true,
+      count: donations.length,
+      donations
+    })
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     })
@@ -83,6 +141,7 @@ exports.updateDonation = async (req, res) => {
 
     if (!donation) {
       return res.status(404).json({
+        success: false,
         message: "Donation not found"
       })
     }
@@ -90,23 +149,26 @@ exports.updateDonation = async (req, res) => {
     // Only owner can update
     if (donation.donorId.toString() !== req.user.id) {
       return res.status(403).json({
-        message: "Not authorized"
+        success: false,
+        message: "Not authorized to update this donation"
       })
     }
 
     const updatedDonation = await Donation.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { ...req.body, updatedAt: Date.now() },
       { new: true }
-    )
+    ).populate("donorId", "name email")
 
     res.json({
+      success: true,
       message: "Donation updated successfully",
       donation: updatedDonation
     })
 
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     })
@@ -121,6 +183,7 @@ exports.deleteDonation = async (req, res) => {
 
     if (!donation) {
       return res.status(404).json({
+        success: false,
         message: "Donation not found"
       })
     }
@@ -128,36 +191,21 @@ exports.deleteDonation = async (req, res) => {
     // Only owner can delete
     if (donation.donorId.toString() !== req.user.id) {
       return res.status(403).json({
-        message: "Not authorized"
+        success: false,
+        message: "Not authorized to delete this donation"
       })
     }
 
     await Donation.findByIdAndDelete(req.params.id)
 
     res.json({
+      success: true,
       message: "Donation deleted successfully"
     })
 
   } catch (error) {
     res.status(500).json({
-      message: "Server error",
-      error: error.message
-    })
-  }
-}
-
-
-// GET MY DONATIONS
-exports.getMyDonations = async (req, res) => {
-  try {
-    const donations = await Donation.find({
-      donorId: req.user.id
-    })
-
-    res.json(donations)
-
-  } catch (error) {
-    res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     })

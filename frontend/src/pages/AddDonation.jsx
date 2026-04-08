@@ -4,14 +4,44 @@ import axios from 'axios';
 import './AddDonation.css';
 
 export default function AddDonation() {
-  const [itemName, setItemName] = useState('');
+  const [title, setTitle] = useState('');
   const [category, setCategory] = useState('books');
   const [quantity, setQuantity] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size must be less than 5MB');
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        setError('Only image files are allowed (jpeg, jpg, png, gif, webp)');
+        return;
+      }
+
+      setImage(file);
+      setError('');
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +49,7 @@ export default function AddDonation() {
     setLoading(true);
 
     // Basic validation
-    if (!itemName || !quantity || !location) {
+    if (!title || !quantity || !location) {
       setError('Please fill in all required fields');
       setLoading(false);
       return;
@@ -27,22 +57,40 @@ export default function AddDonation() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/donations', {
-        itemName,
-        category,
-        quantity: parseInt(quantity),
-        location,
-        description
-      }, {
+      if (!token) {
+        setError('You must be logged in to add a donation');
+        setLoading(false);
+        return;
+      }
+
+      // Create FormData to handle file upload
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('category', category);
+      formData.append('quantity', parseInt(quantity));
+      formData.append('location', location);
+      formData.append('description', description);
+      if (image) {
+        formData.append('image', image);
+      }
+
+      const response = await axios.post('http://localhost:5000/api/donations', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
 
-      alert('Donation added successfully!');
-      navigate('/my-donations');
+      if (response.data.success) {
+        alert('Donation added successfully!');
+        navigate('/donor-dashboard');
+      } else {
+        setError(response.data.message || 'Failed to add donation');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add donation');
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to add donation';
+      setError(errorMsg);
+      console.error('Donation error:', err);
     } finally {
       setLoading(false);
     }
@@ -63,19 +111,19 @@ export default function AddDonation() {
 
           <form onSubmit={handleSubmit} className="donation-form">
             <div className="form-group">
-              <label htmlFor="itemName">Item Name</label>
+              <label htmlFor="title">Item Name *</label>
               <input
                 type="text"
-                id="itemName"
+                id="title"
                 placeholder="e.g., Calculus Textbook, Winter Jacket"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="category">Category</label>
+              <label htmlFor="category">Category *</label>
               <select
                 id="category"
                 value={category}
@@ -93,7 +141,7 @@ export default function AddDonation() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="quantity">Quantity</label>
+                <label htmlFor="quantity">Quantity *</label>
                 <input
                   type="number"
                   id="quantity"
@@ -106,7 +154,7 @@ export default function AddDonation() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="location">Pickup Location</label>
+                <label htmlFor="location">Pickup Location *</label>
                 <input
                   type="text"
                   id="location"
@@ -127,6 +175,34 @@ export default function AddDonation() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="image">Upload Photo (Optional)</label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="file-input"
+              />
+              <p className="file-info">Max file size: 5MB. Supported formats: JPG, PNG, GIF, WebP</p>
+              
+              {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Preview" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImage(null);
+                      setImagePreview(null);
+                    }}
+                    className="btn-remove-image"
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
             </div>
 
             <button type="submit" className="btn-submit" disabled={loading}>

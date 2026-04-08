@@ -20,12 +20,18 @@
   font-size: 2.5rem;
   color: #1e40af;
   margin: 0 0 0.5rem 0;
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.5px;
 }
 
 .dashboard-header p {
-  color: #6b7280;
+  color: #4b5563;
   font-size: 1.1rem;
   margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.3px;
 }
 
 .dashboard-grid {
@@ -78,12 +84,17 @@
   font-size: 1.5rem;
   color: #1e40af;
   margin: 0 0 0.5rem 0;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.3px;
 }
 
 .dashboard-card p {
-  color: #6b7280;
+  color: #4b5563;
   margin: 0;
   line-height: 1.6;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 400;
 }
 
 .card-arrow {
@@ -157,4 +168,81 @@
     bottom: 1.5rem;
     right: 1.5rem;
   }
+}
+
+.recent-donations {
+  margin-top: 4rem;
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.recent-donations h2 {
+  color: #1e40af;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8rem;
+}
+
+.donations-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.donation-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  background: #f9fafb;
+}
+
+.donation-item:hover {
+  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+}
+
+.donation-item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.donation-item .donation-info {
+  flex: 1;
+}
+
+.donation-item h4 {
+  color: #1f2937;
+  margin: 0 0 0.3rem 0;
+  font-size: 1rem;
+}
+
+.donation-item .category {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.donation-item .quantity {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin: 0.2rem 0 0 0;
+}
+
+.donation-item .status-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }

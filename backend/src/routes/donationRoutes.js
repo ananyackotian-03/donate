@@ -1,21 +1,25 @@
 const express = require("express")
 const router = express.Router()
-
-const { register, login } = require("../controllers/authController")
 const authMiddleware = require("../middleware/authMiddleware")
+const upload = require("../../config/multerConfig")
 
-// register
-router.post("/register", register)
+const {
+  createDonation,
+  getDonations,
+  getDonationById,
+  getMyDonations,
+  updateDonation,
+  deleteDonation
+} = require("../controllers/donationController")
 
-// login
-router.post("/login", login)
+// Public routes
+router.get("/", getDonations)
+router.get("/:id", getDonationById)
 
-// protected test route
-router.get("/profile", authMiddleware, (req, res) => {
-  res.json({
-    message: "Protected route accessed",
-    user: req.user
-  })
-})
+// Protected routes (require authentication)
+router.post("/", authMiddleware, upload.single('image'), createDonation)
+router.get("/my-donations", authMiddleware, getMyDonations)
+router.put("/:id", authMiddleware, updateDonation)
+router.delete("/:id", authMiddleware, deleteDonation)
 
 module.exports = router

@@ -5,21 +5,25 @@ import './ViewDonations.css';
 
 export default function ViewDonations() {
   const [donations, setDonations] = useState([]);
+  const [filteredDonations, setFilteredDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/donations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setDonations(response.data);
+        const response = await axios.get('http://localhost:5000/api/donations');
+        
+        if (response.data.success) {
+          setDonations(response.data.donations);
+          setFilteredDonations(response.data.donations);
+        } else {
+          setError(response.data.message || 'Failed to load donations');
+        }
       } catch (err) {
         setError('Failed to load donations');
+        console.error('Fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -28,18 +32,43 @@ export default function ViewDonations() {
     fetchDonations();
   }, []);
 
+  // Handle category filter
+  useEffect(() => {
+    if (selectedCategory === 'all') {
+      setFilteredDonations(donations);
+    } else {
+      setFilteredDonations(
+        donations.filter(d => d.category === selectedCategory)
+      );
+    }
+  }, [selectedCategory, donations]);
+
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Active':
-        return 'status-active';
-      case 'Requested':
+      case 'AVAILABLE':
+        return 'status-available';
+      case 'REQUESTED':
         return 'status-requested';
-      case 'Completed':
-        return 'status-completed';
+      case 'CONFIRMED':
+        return 'status-confirmed';
+      case 'DONATED':
+        return 'status-donated';
       default:
         return '';
     }
   };
+
+  const getStatusLabel = (status) => {
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
+
+  if (loading) {
+    return (
+      <div className="view-donations-page">
+        <div className="loading">Loading donations...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="view-donations-page">
@@ -47,62 +76,77 @@ export default function ViewDonations() {
         <Link to="/donor-dashboard" className="back-link">← Back to Dashboard</Link>
 
         <div className="donations-header">
-          <h1>My Donations</h1>
-          <p>Track and manage all your donations</p>
+          <h1>Available Donations</h1>
+          <p>Browse and request donations from the community</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
 
-        {loading ? (
-          <div className="loading">Loading donations...</div>
+        <div className="filter-section">
+          <label htmlFor="category-filter">Filter by Category:</label>
+          <select
+            id="category-filter"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="all">All Categories</option>
+            <option value="books">Books</option>
+            <option value="clothing">Clothing</option>
+            <option value="electronics">Electronics</option>
+            <option value="furniture">Furniture</option>
+            <option value="food">Food & Groceries</option>
+            <option value="medical">Medical Supplies</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        {filteredDonations.length === 0 ? (
+          <div className="no-donations">
+            <p>No donations available in this category</p>
+          </div>
         ) : (
-          <>
-            <div className="donations-grid">
-              {donations.map((donation) => (
-                <div key={donation.id} className="donation-card">
-                  <div className="card-header">
-                    <h3>{donation.itemName}</h3>
-                    <span className={`status-badge ${getStatusColor(donation.status)}`}>
-                      {donation.status}
-                    </span>
+          <div className="donations-grid">
+            {filteredDonations.map((donation) => (
+              <div key={donation._id} className="donation-card">
+                {donation.imageUrl && (
+                  <div className="donation-image">
+                    <img src={`http://localhost:5000${donation.imageUrl}`} alt={donation.title} />
                   </div>
+                )}
 
-                  <div className="card-body">
-                    <div className="donation-info">
-                      <div className="info-item">
-                        <span className="label">Category:</span>
-                        <span className="value">{donation.category}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="label">Quantity:</span>
-                        <span className="value">{donation.quantity}</span>
-                      </div>
-                    </div>
-
-                    <div className="donation-info">
-                      <div className="info-item">
-                        <span className="label">Location:</span>
-                        <span className="value">📍 {donation.location}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="label">Date Added:</span>
-                        <span className="value">📅 {donation.dateAdded}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="card-footer">
-                    <button className="btn-edit">Edit</button>
-                    <button className="btn-delete">Delete</button>
-                  </div>
+                <div className="donation-card-header">
+                  <h3>{donation.title}</h3>
+                  <span className={`status-badge ${getStatusColor(donation.status)}`}>
+                    {getStatusLabel(donation.status)}
+                  </span>
                 </div>
-              ))}
-            </div>
 
-            <div className="add-new-donation">
-              <Link to="/add-donation" className="btn-add-donation">+ Add New Donation</Link>
-            </div>
-          </>
+                <div className="donation-info">
+                  <p><strong>Category:</strong> {donation.category.charAt(0).toUpperCase() + donation.category.slice(1)}</p>
+                  <p><strong>Quantity:</strong> {donation.quantity}</p>
+                  <p><strong>Location:</strong> {donation.location}</p>
+                  {donation.donorId && (
+                    <p><strong>Donor:</strong> {donation.donorId.name}</p>
+                  )}
+                </div>
+
+                {donation.description && (
+                  <div className="donation-description">
+                    <p>{donation.description}</p>
+                  </div>
+                )}
+
+                <div className="donation-footer">
+                  <small>
+                    Posted on {new Date(donation.createdAt).toLocaleDateString()}
+                  </small>
+                  <Link to={`/donations/${donation._id}`} className="btn-view-details">
+                    View Details
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

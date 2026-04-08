@@ -31,12 +31,18 @@
   font-size: 1.8rem;
   color: #1e40af;
   margin: 0 0 0.5rem 0;
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.3px;
 }
 
 .login-header p {
-  color: #6b7280;
+  color: #4b5563;
   margin: 0;
   font-size: 0.95rem;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.3px;
 }
 
 .error-message {
@@ -63,9 +69,11 @@
 }
 
 .form-group label {
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 700;
+  color: #1a202c;
   font-size: 0.95rem;
+  font-family: 'Segoe UI', sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .form-group input {
