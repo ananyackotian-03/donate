@@ -163,3 +163,235 @@ exports.getMyOrganization = async (req, res) => {
     });
   }
 };
+
+// GET ALL ORGANIZATIONS (ADMIN ONLY)
+exports.getAllOrganizationsAdmin = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    const orgs = await Organization.find()
+      .populate('adminUser', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: orgs
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// VERIFY / REJECT ORGANIZATION (ADMIN ONLY)
+exports.verifyOrganization = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    const { action, rejectionReason } = req.body;
+
+    const org = await Organization.findById(req.params.id);
+
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+
+    if (action === 'approve') {
+      org.verificationStatus = 'verified';
+      org.verifiedBy = req.user._id;
+      org.verifiedAt = new Date();
+    }
+
+    else if (action === 'reject') {
+      if (!rejectionReason) {
+        return res.status(400).json({
+          success: false,
+          message: 'Rejection reason is required'
+        });
+      }
+
+      org.verificationStatus = 'rejected';
+      org.rejectionReason = rejectionReason;
+    }
+
+    else {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid action'
+      });
+    }
+
+    await org.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Organization ${action}d successfully`,
+      data: org
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// ADD MEMBER TO ORGANIZATION
+exports.addMember = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const org = await Organization.findById(req.params.id);
+
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+
+    // Check if requester is org admin
+    if (org.adminUser.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only org admin can add members'
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (org.members.includes(user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already a member'
+      });
+    }
+
+    org.members.push(user._id);
+    await org.save();
+
+    user.organization = org._id;
+    await user.save();
+
+    // TODO: Trigger notification when notification service is ready
+    // await createNotification({
+    //   recipient: user._id,
+    //   type: 'new_member',
+    //   title: 'Added to Organization',
+    //   message: `You have been added to ${org.name}`
+    // });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member added successfully',
+      data: org.members
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// REMOVE MEMBER FROM ORGANIZATION
+exports.removeMember = async (req, res) => {
+  try {
+    const org = await Organization.findById(req.params.id);
+
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+
+    // Check if requester is org admin
+    if (org.adminUser.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only org admin can remove members'
+      });
+    }
+
+    const userId = req.params.userId;
+
+    org.members = org.members.filter(
+      member => member.toString() !== userId
+    );
+
+    await org.save();
+
+    await User.findByIdAndUpdate(userId, {
+      organization: null
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member removed successfully',
+      data: org.members
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// GET ORGANIZATION MEMBERS
+exports.getMembers = async (req, res) => {
+  try {
+    const org = await Organization.findById(req.params.id)
+      .populate('members', 'name email');
+
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: org.members
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};

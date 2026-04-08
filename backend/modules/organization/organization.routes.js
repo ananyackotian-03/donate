@@ -5,7 +5,12 @@ const {
   createOrganization, 
   getAllOrganizations, 
   getOrganizationById,
-  getMyOrganization 
+  getMyOrganization,
+  getAllOrganizationsAdmin,
+  verifyOrganization,
+  addMember,
+  removeMember,
+  getMembers
 } = require('./organization.controller');
 const authMiddleware = require('../../src/middleware/authMiddleware');
 
@@ -14,6 +19,15 @@ router.post('/', authMiddleware, createOrganization);
 
 // GET - My Organization (must be BEFORE /:id)
 router.get('/my', authMiddleware, getMyOrganization);
+
+// ADMIN ROUTES
+router.get('/admin/all', authMiddleware, getAllOrganizationsAdmin);
+router.put('/admin/:id/verify', authMiddleware, verifyOrganization);
+
+// TEAM MANAGEMENT ROUTES
+router.post('/:id/members', authMiddleware, addMember);
+router.delete('/:id/members/:userId', authMiddleware, removeMember);
+router.get('/:id/members', authMiddleware, getMembers);
 
 // GET - All Verified Organizations
 router.get('/', getAllOrganizations);
