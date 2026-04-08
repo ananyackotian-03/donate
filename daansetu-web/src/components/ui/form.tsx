@@ -21,10 +21,12 @@ const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
+  name,
+  render,
   ...props
-}: FieldValues) => (
-  <FormFieldContext.Provider value={{ name: props.name }}>
-    <Controller {...props} />
+}: any) => (
+  <FormFieldContext.Provider value={{ name }}>
+    <Controller name={name} render={render} {...props} />
   </FormFieldContext.Provider>
 )
 
