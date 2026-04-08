@@ -10,7 +10,10 @@ app.use(express.json());
 
 // routes
 const authRoutes = require("./src/routes/authRoutes");
+const organizationRoutes = require("./modules/organization/organization.routes");
+
 app.use("/api/auth", authRoutes);
+app.use("/api/organizations", organizationRoutes);
 
 // DB connect
 mongoose
